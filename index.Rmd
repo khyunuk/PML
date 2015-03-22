@@ -1,0 +1,63 @@
+---
+title: "Practical Machine Learning Project"
+author: "Hyunuk Kim"
+date: "Saturday, March 21, 2015"
+output: html_document
+---
+
+__Introduction__
+
+The goal of this project is to predict classe of specific training data from six male participants whose age between 20 and 28. In the original research, they set sensors at arm, belt, forearm, dumbbell of each participants. Each sensors record every movement by x, y, and z axis. These observations will be used to predict class of given data set. The method that I used in the project is 10-fold cross validation with simple linear discriminant function. Of course, Random Forest approach in order to obtain higher accuracy than simple linear discriminant function can be used but it takes much more time while guaranteeing good results. I hope to gain accuracy rate up to 70 percent. 
+
+```{r, echo=TRUE, cache=TRUE}
+library(caret)
+data<-read.csv('pml-training.csv')
+set.seed(123)
+```
+
+
+__Splitting data__
+
+We have 19,662 observations, so I split the data set with probability 0.6 because I think that the size of data falls into medium class. Moreover, I define train_control which shows 10-folds cross validation at this time. 
+
+```{r, echo=TRUE, cache=TRUE}
+inTrain<-createDataPartition(y=data$classe, p=0.6, list=FALSE)
+training<-data[inTrain,]
+testing<-data[-inTrain,]
+train_control<-trainControl(method="cv", number=10)
+```
+
+__Linear Discriminant Function Approach__
+
+As I said before, I implement linear discriminant function method. This R code makes the result of prediction for testing data that I splitted at the first stage. It also shows confusion matrix by comparing prediction with actual class of testing data. Factors used in the prediction are observations from sensors at arm, belt, forearm, dumbbell that are crucial for prediciting class. 
+
+```{r, echo=TRUE, cache=TRUE}
+modelFit<-train(classe~roll_belt+pitch_belt+yaw_belt+total_accel_belt+gyros_belt_x+gyros_belt_y+gyros_belt_z+accel_belt_x+accel_belt_y+accel_belt_z+magnet_belt_x+magnet_belt_y+magnet_belt_z+roll_arm+pitch_arm+yaw_arm+total_accel_arm+gyros_arm_x+gyros_arm_y+gyros_arm_z+accel_arm_x+accel_arm_y+accel_arm_z+magnet_arm_x+magnet_arm_y+magnet_arm_z+roll_dumbbell+pitch_dumbbell+yaw_dumbbell+total_accel_dumbbell+gyros_dumbbell_x+gyros_dumbbell_y+gyros_dumbbell_z+accel_dumbbell_x+accel_dumbbell_y+accel_dumbbell_z+magnet_dumbbell_x+magnet_dumbbell_y+magnet_dumbbell_z+roll_forearm+pitch_forearm+yaw_forearm+total_accel_forearm+gyros_forearm_x+gyros_forearm_y+gyros_forearm_z+accel_forearm_x+accel_forearm_y+accel_forearm_z+magnet_forearm_x+magnet_forearm_y+magnet_forearm_z, data=training, method="lda", prox=TRUE, trControl=train_control)
+pred<-predict(modelFit, testing)
+confusionMatrix(pred, testing$classe)
+```
+
+__Test Data Validation__
+
+```{r, echo=TRUE, cache=TRUE}
+test_data<-read.csv('pml-testing.csv')
+predict(modelFit, test_data)
+```
+
+__Results__
+
+Accuracy rate through my analysis is 70.56%. There is some cost for high accuracy. We can check that the original research gets better result because they use not only Random Forest but also feature selection by using algorithm which proposed by Hall called "Best First". I would like to recommend to use linear discriminant function if your computer couldn't do heavy calculating. It shows a good accuracy with low cost. 
+
+
+__Reference__
+
+Velloso, E.; Bulling, A.; Gellersen, H.; Ugulino, W.; Fuks, H. Qualitative Activity Recognition of Weight Lifting Exercises. Proceedings of 4th International Conference in Cooperation with SIGCHI (Augmented Human '13) . Stuttgart, Germany: ACM SIGCHI, 2013.
+
+Read more: http://groupware.les.inf.puc-rio.br/har#ixzz3V4qI7GxX
+
+
+
+
+
+
+
