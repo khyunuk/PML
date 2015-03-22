@@ -13,8 +13,10 @@ The goal of this project is to predict classe of specific training data from six
 library(caret)
 data<-read.csv('pml-training.csv')
 set.seed(123)
+barplot(table(data$classe))
 ```
 
+From barplot of classe of our data set, it seems that there is no bias among class A, B, C, D, and E.
 
 __Splitting data__
 
